@@ -119,9 +119,12 @@ class TreeTagger(TaggerI):
         elif(self._abbr_list is not None):
             p = Popen([self._treetagger_bin,"-a",self._abbr_list], 
                         shell=False, stdin=PIPE, stdout=PIPE, stderr=PIPE)
-        
+
         #(stdout, stderr) = p.communicate(bytes(_input, 'UTF-8'))
-        (stdout, stderr) = p.communicate(str(_input).encode('utf-8'))
+        if hasattr(_input,'read') :
+            (stdout, stderr) = p.communicate(_input.read().encode('utf-8'))
+        else:
+            (stdout, stderr) = p.communicate(str(_input).encode('utf-8'))
 
         # Check the return code.
         if p.returncode != 0:
