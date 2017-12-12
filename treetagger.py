@@ -141,6 +141,9 @@ class TreeTagger(TaggerI):
 
         return tagged_sentences
 
+    @staticmethod
+    def languages():
+        return _treetagger_languages
 
 if __name__ == "__main__":
     import doctest
