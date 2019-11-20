@@ -112,17 +112,21 @@ class TreeTagger(TaggerI):
         else:
             _input = sentences
 
+        if hasattr(_input,'read') :
+            infile = _input
+        else:
+            infile = PIPE
         # Run the tagger and get the output
         if(self._abbr_list is None):
             p = Popen([self._treetagger_bin], 
-                        shell=False, stdin=PIPE, stdout=PIPE, stderr=PIPE)
+                        shell=False, stdin=infile, stdout=PIPE, stderr=PIPE)
         elif(self._abbr_list is not None):
             p = Popen([self._treetagger_bin,"-a",self._abbr_list], 
-                        shell=False, stdin=PIPE, stdout=PIPE, stderr=PIPE)
+                        shell=False, stdin=infile, stdout=PIPE, stderr=PIPE)
 
         #(stdout, stderr) = p.communicate(bytes(_input, 'UTF-8'))
         if hasattr(_input,'read') :
-            (stdout, stderr) = p.communicate(_input.read().encode('utf-8'))
+            (stdout, stderr) = p.communicate()
         else:
             (stdout, stderr) = p.communicate(str(_input).encode('utf-8'))
 
