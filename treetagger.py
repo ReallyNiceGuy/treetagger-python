@@ -8,7 +8,7 @@
 A Python module for interfacing with the Treetagger by Helmut Schmid.
 """
 
-import os
+import os, tempfile
 from subprocess import Popen, PIPE
 
 from nltk.internals import find_binary, find_file
@@ -117,12 +117,13 @@ class TreeTagger(TaggerI):
         else:
             infile = PIPE
         # Run the tagger and get the output
+        outfile = tempfile.TemporaryFile(mode="w+",encoding="utf8")
         if(self._abbr_list is None):
-            p = Popen([self._treetagger_bin], 
-                        shell=False, stdin=infile, stdout=PIPE, stderr=PIPE)
+            p = Popen([self._treetagger_bin],
+                        shell=False, stdin=infile, stdout=outfile, stderr=PIPE)
         elif(self._abbr_list is not None):
-            p = Popen([self._treetagger_bin,"-a",self._abbr_list], 
-                        shell=False, stdin=infile, stdout=PIPE, stderr=PIPE)
+            p = Popen([self._treetagger_bin,"-a",self._abbr_list],
+                        shell=False, stdin=infile, stdout=outfile, stderr=PIPE)
 
         #(stdout, stderr) = p.communicate(bytes(_input, 'UTF-8'))
         if hasattr(_input,'read') :
@@ -135,15 +136,11 @@ class TreeTagger(TaggerI):
             print(stderr)
             raise OSError('TreeTagger command failed!')
 
-        treetagger_output = stdout.decode('UTF-8')
-
+        outfile.seek(0)
         # Output the tagged sentences
-        tagged_sentences = []
-        for tagged_word in treetagger_output.strip().split('\n'):
-            tagged_word_split = tagged_word.split('\t')
-            tagged_sentences.append(tagged_word_split)
-
-        return tagged_sentences
+        for tagged_line in outfile:
+            tagged_word_split = tagged_line.strip().split('\t')
+            yield tagged_word_split
 
     @staticmethod
     def languages():
